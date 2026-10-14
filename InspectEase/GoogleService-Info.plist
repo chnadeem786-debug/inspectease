@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyDUbZeuBL-Ej3XotjU8Q22a0uWYrr_KkvY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>223410568421</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.neemo.InspectEase</string>
+	<key>PROJECT_ID</key>
+	<string>inspect-ease-9d1cd</string>
+	<key>STORAGE_BUCKET</key>
+	<string>inspect-ease-9d1cd.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:223410568421:ios:db560bd103368d1376a80c</string>
+</dict>
+</plist>
