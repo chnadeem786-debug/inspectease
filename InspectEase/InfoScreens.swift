@@ -13,7 +13,7 @@ struct AccountView: View {
     @State private var showDeleteNotice = false
     @State private var alertMessage: String?
 
-    private var user: FirebaseUserInfo? { AuthService.shared.user.map(FirebaseUserInfo.init) }
+    private var user: FirebaseUserInfo? { Auth.auth().currentUser.map(FirebaseUserInfo.init) }
 
     var body: some View {
         ScrollView {
