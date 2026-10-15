@@ -3,7 +3,6 @@
 //  InspectEase
 //
 //  Settings menu, ported from SettingsScreenColorful in the Android app.
-//  Logout is left out until sign-in is ported.
 //
 
 import SwiftUI
@@ -16,7 +15,7 @@ struct SettingsView: View {
             VStack(spacing: 12) {
                 SettingsRow(
                     title: "Subscription",
-                    subtitle: AppStatus.isPremium ? "Premium Active" : "Upgrade to Pro",
+                    subtitle: Entitlements.shared.isPremium ? "Premium Active" : "Upgrade to Pro",
                     route: .subscription
                 )
                 SettingsRow(title: "Account", subtitle: "Manage your account", route: .account)
@@ -30,6 +29,13 @@ struct SettingsView: View {
 
                 SettingsRow(title: "Privacy", subtitle: "Privacy settings & policy", route: .privacy)
                 SettingsRow(title: "About", subtitle: "About InspectEase", route: .about)
+
+                Button {
+                    try? AuthService.shared.signOut()
+                } label: {
+                    SettingsRowLabel(title: "Logout", subtitle: "Sign out of your account")
+                }
+                .buttonStyle(.plain)
             }
             .padding(16)
         }

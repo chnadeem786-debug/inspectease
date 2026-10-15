@@ -15,7 +15,7 @@ final class InspectionDraft {
     static let totalSteps = 6
     /// Free accounts can attach this many photos.
     static let freePhotoLimit = 3
-    var isPremium: Bool { AppStatus.isPremium }
+    var isPremium: Bool { Entitlements.shared.isPremium }
 
     var data = InspectionData()
     var step = 1
@@ -50,20 +50,19 @@ final class InspectionDraft {
         InspectionStorage.deletePhoto(named: name)
     }
 
-    /// Saves locally only. The Android app also syncs metadata to the cloud.
-    func save() throws {
-        let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
-        try InspectionStorage.saveInspection(
-            SavedInspection(
-                timestamp: timestamp,
-                address: data.address,
-                inspectorName: data.inspectorName,
-                date: data.date,
-                photos: data.photos,
-                selectedIssues: data.selectedIssues,
-                notes: data.notes,
-                rating: data.rating
-            )
+    /// Saves locally and returns the saved record so it can be synced to the cloud.
+    func save() throws -> SavedInspection {
+        let inspection = SavedInspection(
+            timestamp: Int64(Date().timeIntervalSince1970 * 1000),
+            address: data.address,
+            inspectorName: data.inspectorName,
+            date: data.date,
+            photos: data.photos,
+            selectedIssues: data.selectedIssues,
+            notes: data.notes,
+            rating: data.rating
         )
+        try InspectionStorage.saveInspection(inspection)
+        return inspection
     }
 }

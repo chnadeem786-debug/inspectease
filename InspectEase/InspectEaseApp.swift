@@ -22,7 +22,22 @@ struct InspectEaseApp: App {
 
     var body: some Scene {
         WindowGroup {
+            RootView()
+        }
+    }
+}
+
+/// Shows sign-in until the user is logged in, then the home screen.
+struct RootView: View {
+    private var auth: AuthService { AuthService.shared }
+
+    var body: some View {
+        if auth.isLoggedIn {
             ContentView()
+        } else {
+            NavigationStack {
+                LoginView()
+            }
         }
     }
 }

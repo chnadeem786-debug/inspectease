@@ -73,13 +73,13 @@ struct ContentView: View {
                 case .settings:
                     SettingsView()
                 case .subscription:
-                    PlaceholderView(title: "Subscription")
+                    SubscriptionView()
                 case .account:
-                    PlaceholderView(title: "Account")
+                    AccountView()
                 case .about:
-                    PlaceholderView(title: "About")
+                    AboutView()
                 case .privacy:
-                    PlaceholderView(title: "Privacy")
+                    PrivacyView()
                 }
             }
         }
@@ -159,21 +159,6 @@ private struct UpgradeBanner: View {
             .background(ModernColorfulTheme.primaryGradient, in: RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// Stand-in for screens that haven't been ported yet.
-struct PlaceholderView: View {
-    let title: String
-
-    var body: some View {
-        VStack(spacing: 12) {
-            Text(title)
-                .font(.title2.bold())
-            Text("Not ported yet")
-                .foregroundStyle(ModernColorfulTheme.textSecondary)
-        }
-        .navigationTitle(title)
     }
 }
 

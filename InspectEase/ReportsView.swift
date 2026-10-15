@@ -9,15 +9,28 @@
 
 import SwiftUI
 import UIKit
+import FirebaseAuth
 
 struct ReportsView: View {
     var onUpgrade: () -> Void = {}
 
     @State private var inspections: [SavedInspection] = []
 
+    private func loadInspections() async {
+        let local = InspectionStorage.loadInspections()
+        inspections = local
+        guard let userId = AuthService.shared.user?.uid else { return }
+
+        let cloud = await CloudService.fetchInspections(userId: userId)
+        var seen = Set<Int64>()
+        inspections = (local + cloud)
+            .filter { seen.insert($0.timestamp).inserted }
+            .sorted { $0.timestamp > $1.timestamp }
+    }
+
     var body: some View {
         Group {
-            if !AppStatus.isPremium {
+            if !Entitlements.shared.isPremium {
                 LockedFeatureView(
                     title: "Professional Reports",
                     description: "Generate and share unlimited PDF reports with your own branding.",
@@ -49,8 +62,8 @@ struct ReportsView: View {
         }
         .navigationTitle("Reports")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            inspections = InspectionStorage.loadInspections()
+        .task {
+            await loadInspections()
         }
     }
 }
@@ -58,7 +71,7 @@ struct ReportsView: View {
 struct ReportDetailView: View {
     let inspection: SavedInspection
 
-    @State private var showPDFNotice = false
+    @State private var pdfURL: URL?
 
     var body: some View {
         ScrollView {
@@ -103,26 +116,26 @@ struct ReportDetailView: View {
                     }
                 }
 
-                Button {
-                    showPDFNotice = true
-                } label: {
-                    Text("📩 Share PDF Report")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(ModernColorfulTheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
+                if let pdfURL {
+                    ShareLink(item: pdfURL) {
+                        Text("📩 Share PDF Report")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(ModernColorfulTheme.primaryGradient, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 8)
                 }
-                .buttonStyle(.plain)
-                .padding(.top, 8)
             }
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle("Inspection Details")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("PDF export isn't ported yet.", isPresented: $showPDFNotice) {
-            Button("OK", role: .cancel) {}
+        .task {
+            pdfURL = try? PDFReport.generate(for: inspection)
         }
     }
 }

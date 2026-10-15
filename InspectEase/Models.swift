@@ -17,11 +17,6 @@ struct InspectionData: Equatable {
     var rating = 0
 }
 
-/// Billing isn't ported yet, so every user is free for now.
-enum AppStatus {
-    static let isPremium = false
-}
-
 struct Issue: Identifiable, Hashable {
     let id: String
     let emoji: String

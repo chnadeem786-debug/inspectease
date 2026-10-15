@@ -3,18 +3,20 @@
 //  InspectEase
 //
 //  Six-step inspection form, ported from InspectionScreenColorful in the
-//  Android app. Camera capture ("Snap") is not ported yet.
+//  Android app.
 //
 
 import SwiftUI
 import PhotosUI
 import UIKit
+import FirebaseAuth
 
 struct NewInspectionView: View {
     @State private var draft = InspectionDraft()
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var alertMessage: String?
     @State private var showDatePicker = false
+    @State private var showCamera = false
     @State private var selectedDate = Date()
     @Environment(\.dismiss) private var dismiss
 
@@ -76,6 +78,15 @@ struct NewInspectionView: View {
         .onChange(of: pickerItems) { _, items in
             guard !items.isEmpty else { return }
             Task { await loadPhotos(items) }
+        }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPicker { image in
+                showCamera = false
+                if let image {
+                    addCapturedPhoto(image)
+                }
+            }
+            .ignoresSafeArea()
         }
     }
 
@@ -160,19 +171,34 @@ struct NewInspectionView: View {
                     .foregroundStyle(ModernColorfulTheme.textSecondary)
             }
 
-            PhotosPicker(
-                selection: $pickerItems,
-                maxSelectionCount: remainingPhotoSlots,
-                matching: .images
-            ) {
-                Text("📁 Upload")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(ModernColorfulTheme.textPrimary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 48)
-                    .background(ModernColorfulTheme.lightGray, in: RoundedRectangle(cornerRadius: 8))
+            HStack(spacing: 8) {
+                Button {
+                    showCamera = true
+                } label: {
+                    Text("📷 Snap")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(ModernColorfulTheme.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(ModernColorfulTheme.lightGray, in: RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .disabled(!draft.canAddPhoto || !CameraPicker.isAvailable)
+
+                PhotosPicker(
+                    selection: $pickerItems,
+                    maxSelectionCount: remainingPhotoSlots,
+                    matching: .images
+                ) {
+                    Text("📁 Upload")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(ModernColorfulTheme.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(ModernColorfulTheme.lightGray, in: RoundedRectangle(cornerRadius: 8))
+                }
+                .disabled(!draft.canAddPhoto)
             }
-            .disabled(!draft.canAddPhoto)
 
             if !draft.canAddPhoto {
                 Text("Free limit reached (\(InspectionDraft.freePhotoLimit) photos). Go Pro for unlimited.")
@@ -268,11 +294,27 @@ struct NewInspectionView: View {
             }
         } else {
             do {
-                try draft.save()
+                let saved = try draft.save()
+                syncToCloud(saved)
                 dismiss()
             } catch {
                 alertMessage = "Could not save the inspection: \(error.localizedDescription)"
             }
+        }
+    }
+
+    /// Best-effort metadata sync. The local copy is the primary record.
+    private func syncToCloud(_ inspection: SavedInspection) {
+        guard let userId = AuthService.shared.user?.uid else { return }
+        Task { try? await CloudService.saveInspection(inspection, userId: userId) }
+    }
+
+    private func addCapturedPhoto(_ image: UIImage) {
+        guard let jpeg = image.jpegData(compressionQuality: 0.8) else { return }
+        do {
+            try draft.addPhoto(jpegData: jpeg)
+        } catch {
+            alertMessage = "Failed to save photo"
         }
     }
 
@@ -300,7 +342,7 @@ struct NewInspectionView: View {
 
 // MARK: - Helpers
 
-private extension View {
+extension View {
     func fieldStyle() -> some View {
         self
             .padding(.horizontal, 12)
