@@ -13,7 +13,8 @@ struct AccountView: View {
     @State private var showDeleteNotice = false
     @State private var alertMessage: String?
 
-    private var user: FirebaseUserInfo? { Auth.auth().currentUser.map(FirebaseUserInfo.init) }
+    private var email: String { Auth.auth().currentUser?.email ?? "Not Logged In" }
+    private var uid: String { Auth.auth().currentUser?.uid ?? "N/A" }
 
     var body: some View {
         ScrollView {
@@ -23,10 +24,10 @@ struct AccountView: View {
                     .foregroundStyle(ModernColorfulTheme.textPrimary)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Email: \(user?.email ?? "Not Logged In")")
+                    Text("Email: \(email)")
                         .font(.subheadline)
                         .foregroundStyle(ModernColorfulTheme.textPrimary)
-                    Text("User ID: \(user?.uid ?? "N/A")")
+                    Text("User ID: \(uid)")
                         .font(.caption2)
                         .foregroundStyle(ModernColorfulTheme.textSecondary)
                 }
@@ -71,17 +72,6 @@ struct AccountView: View {
         } message: {
             Text("Please contact support to delete your account data.")
         }
-    }
-}
-
-/// Keeps the Account view independent of FirebaseAuth types.
-private struct FirebaseUserInfo {
-    let email: String?
-    let uid: String
-
-    init(_ user: FirebaseAuth.User) {
-        email = user.email
-        uid = user.uid
     }
 }
 
