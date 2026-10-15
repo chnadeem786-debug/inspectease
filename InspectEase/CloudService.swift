@@ -37,6 +37,19 @@ enum CloudService {
         }
     }
 
+    /// True when the cloud record (written by the Android app or by this app) is still active.
+    static func checkSubscription(userId: String) async -> Bool {
+        do {
+            let doc = try await db.collection("users").document(userId)
+                .collection("subscriptions").document("active").getDocument()
+            guard doc.exists else { return false }
+            let expiresAt = (doc.data()?["expiresAt"] as? NSNumber)?.int64Value ?? 0
+            return expiresAt > Int64(Date().timeIntervalSince1970 * 1000)
+        } catch {
+            return false
+        }
+    }
+
     static func updateSubscription(userId: String, isPremium: Bool, productId: String) async throws {
         let now = Int64(Date().timeIntervalSince1970 * 1000)
         // Same 32-day window the Android app uses for monthly plans.

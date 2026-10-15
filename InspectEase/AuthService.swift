@@ -8,6 +8,7 @@
 
 import Foundation
 import FirebaseAuth
+import FirebaseAnalytics
 import Observation
 
 @MainActor
@@ -25,16 +26,19 @@ final class AuthService {
         listener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             Task { @MainActor in
                 self?.user = user
+                await Entitlements.shared.refresh()
             }
         }
     }
 
     func signIn(email: String, password: String) async throws {
         _ = try await Auth.auth().signIn(withEmail: email, password: password)
+        Analytics.logEvent("user_login_success", parameters: nil)
     }
 
     func signUp(email: String, password: String) async throws {
         _ = try await Auth.auth().createUser(withEmail: email, password: password)
+        Analytics.logEvent("user_signup_success", parameters: nil)
     }
 
     func resetPassword(email: String) async throws {

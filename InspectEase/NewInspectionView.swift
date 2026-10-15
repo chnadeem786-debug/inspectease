@@ -10,6 +10,7 @@ import SwiftUI
 import PhotosUI
 import UIKit
 import FirebaseAuth
+import FirebaseAnalytics
 
 struct NewInspectionView: View {
     @State private var draft = InspectionDraft()
@@ -296,6 +297,10 @@ struct NewInspectionView: View {
             do {
                 let saved = try draft.save()
                 syncToCloud(saved)
+                Analytics.logEvent("inspection_saved", parameters: [
+                    "address": saved.address,
+                    "photo_count": saved.photos.count,
+                ])
                 dismiss()
             } catch {
                 alertMessage = "Could not save the inspection: \(error.localizedDescription)"

@@ -55,6 +55,10 @@ final class Entitlements {
                 active = true
             }
         }
+        if !active, let userId = Auth.auth().currentUser?.uid {
+            // Pro bought on Android is recorded in the cloud, so check there too.
+            active = await CloudService.checkSubscription(userId: userId)
+        }
         isPremium = active
         isLoading = false
     }
