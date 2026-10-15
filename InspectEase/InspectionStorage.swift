@@ -21,6 +21,19 @@ struct SavedInspection: Codable, Identifiable {
     let rating: Int
 
     var id: Int64 { timestamp }
+
+    func removingPhoto(_ name: String) -> SavedInspection {
+        SavedInspection(
+            timestamp: timestamp,
+            address: address,
+            inspectorName: inspectorName,
+            date: date,
+            photos: photos.filter { $0 != name },
+            selectedIssues: selectedIssues,
+            notes: notes,
+            rating: rating
+        )
+    }
 }
 
 enum InspectionStorage {
@@ -51,6 +64,20 @@ enum InspectionStorage {
     static func saveInspection(_ inspection: SavedInspection) throws {
         var list = loadInspections()
         list.insert(inspection, at: 0)
+        try writeInspections(list)
+    }
+
+    /// Removes a photo from one saved inspection and deletes the file.
+    static func removePhoto(named name: String, fromInspection timestamp: Int64) throws {
+        var list = loadInspections()
+        if let index = list.firstIndex(where: { $0.timestamp == timestamp }) {
+            list[index] = list[index].removingPhoto(name)
+            try writeInspections(list)
+        }
+        deletePhoto(named: name)
+    }
+
+    private static func writeInspections(_ list: [SavedInspection]) throws {
         let data = try JSONEncoder().encode(list)
         try data.write(to: inspectionsFile, options: .atomic)
     }

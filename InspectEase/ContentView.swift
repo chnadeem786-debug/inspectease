@@ -13,6 +13,9 @@ enum Route: Hashable {
     case reports
     case settings
     case subscription
+    case account
+    case about
+    case privacy
 }
 
 struct ContentView: View {
@@ -64,13 +67,19 @@ struct ContentView: View {
                 case .newInspection:
                     NewInspectionView()
                 case .photos:
-                    PlaceholderView(title: "Photo Gallery")
+                    PhotoGalleryView()
                 case .reports:
                     ReportsView(onUpgrade: { path.append(Route.subscription) })
                 case .settings:
-                    PlaceholderView(title: "Settings")
+                    SettingsView()
                 case .subscription:
                     PlaceholderView(title: "Subscription")
+                case .account:
+                    PlaceholderView(title: "Account")
+                case .about:
+                    PlaceholderView(title: "About")
+                case .privacy:
+                    PlaceholderView(title: "Privacy")
                 }
             }
         }
